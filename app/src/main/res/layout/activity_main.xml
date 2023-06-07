@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
+    android:background="@color/gpt4purple"
     tools:context=".MainActivity">
 
     <ImageView
@@ -13,7 +13,7 @@
         android:layout_height="64dp"
         android:layout_margin="16dp"
         android:layout_marginTop="24dp"
-        android:src="@drawable/logo_perplexity"
+        android:src="@drawable/logo_chatgpt"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -49,7 +49,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/searchQuery">
 
-        <cx.aphex.perplexity.BlinkingCaretTextView
+        <cx.aphex.chatgpt.BlinkingCaretTextView
             android:id="@+id/markdownView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

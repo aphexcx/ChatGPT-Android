@@ -13,5 +13,5 @@ dependencyResolutionManagement {
         maven { url "https://jitpack.io" }
     }
 }
-rootProject.name = "Perplexity"
+rootProject.name = "ChatGPT"
 include ':app'

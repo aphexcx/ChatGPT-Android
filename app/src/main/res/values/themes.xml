@@ -1,10 +1,10 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="Base.Theme.Perplexity" parent="Theme.Material3.Dark.NoActionBar">
+    <style name="Base.Theme.ChatGPT" parent="Theme.Material3.Dark.NoActionBar">
         <!-- Customize your light theme here. -->
         <item name="colorPrimary">#000000</item>
         <item name="colorAccent">#2196F3</item>
     </style>
 
-    <style name="Theme.Perplexity" parent="Base.Theme.Perplexity" />
+    <style name="Theme.ChatGPT" parent="Base.Theme.ChatGPT" />
 </resources>

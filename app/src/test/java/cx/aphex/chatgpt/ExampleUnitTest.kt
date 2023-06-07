@@ -1,4 +1,4 @@
-package cx.aphex.perplexity
+package cx.aphex.chatgpt
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

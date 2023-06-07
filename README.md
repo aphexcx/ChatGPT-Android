@@ -1,23 +1,13 @@
-# perplexity-ai-android
-A Perplexity.ai clone for Android, based on https://github.com/mckaywrigley/clarity-ai.
+# ChatGPT-android
 
-Perplexity is an Android application that uses OpenAI's GPT-3.5-turbo to answer user questions by searching the web, parsing relevant sources, and presenting the information in a concise and user-friendly format. The app features a smooth chat-like interface and animated typing indicators to provide an engaging experience.
-
-## Features
-
-- Search the web for relevant information to answer user queries
-- Parse and filter website content using Kotlin
-- Generate answers using OpenAI's GPT-3.5-turbo API
-- Animated typing indicators and logo animations
-- Display answers and sources with a visually appealing UI
-- Make source links clickable for users to explore further
+ChatGPT for Android.
 
 ## Installation
 
 1. Clone this repository:
 
 ```bash
-git clone https://github.com/yourusername/Perplexity.git
+git clone https://github.com/yourusername/ChatGPT.git
 ```
 
 2. Open the project in Android Studio

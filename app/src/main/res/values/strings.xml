@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Perplexity</string>
-    <string name="search_hint">Ask anything…</string>
+    <string name="app_name">ChatGPT</string>
+    <string name="search_hint">Message</string>
 </resources>

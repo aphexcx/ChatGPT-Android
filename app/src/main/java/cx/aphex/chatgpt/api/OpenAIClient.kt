@@ -1,4 +1,4 @@
-package cx.aphex.perplexity.api
+package cx.aphex.chatgpt.api
 
 import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.chat.ChatCompletionChunk
@@ -9,8 +9,10 @@ import com.aallam.openai.api.http.Timeout
 import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
 import com.aallam.openai.client.OpenAIConfig
-import cx.aphex.perplexity.BuildConfig
+import cx.aphex.chatgpt.BuildConfig
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlin.time.Duration.Companion.seconds
 
 @BetaOpenAI
@@ -35,10 +37,11 @@ object OpenAIClient {
                     content = prompt
                 )
             ),
-            maxTokens = 1000,
+            maxTokens = 2048,
             temperature = 0.0
         )
 
         return openAI.chatCompletions(chatCompletionRequest)
+            .flowOn(Dispatchers.IO)
     }
 }

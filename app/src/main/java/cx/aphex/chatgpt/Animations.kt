@@ -1,4 +1,4 @@
-package cx.aphex.perplexity
+package cx.aphex.chatgpt
 
 import BlinkingCaretSpan
 import android.animation.AnimatorSet

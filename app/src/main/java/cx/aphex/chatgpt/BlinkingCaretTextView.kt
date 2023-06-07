@@ -1,4 +1,4 @@
-package cx.aphex.perplexity
+package cx.aphex.chatgpt
 
 import android.content.Context
 import android.graphics.Canvas

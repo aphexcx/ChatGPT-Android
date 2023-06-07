@@ -1,4 +1,4 @@
-package cx.aphex.perplexity
+package cx.aphex.chatgpt
 
 import android.graphics.Color
 import android.os.Parcel

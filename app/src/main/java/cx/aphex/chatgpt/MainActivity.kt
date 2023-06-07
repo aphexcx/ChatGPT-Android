@@ -1,22 +1,24 @@
-package cx.aphex.perplexity
+package cx.aphex.chatgpt
 
 import BlinkingCaretSpan
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.os.Bundle
-import android.text.Spannable
 import android.text.SpannableStringBuilder
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.aallam.openai.api.BetaOpenAI
-import cx.aphex.perplexity.Animations.createCaretAnimator
-import cx.aphex.perplexity.databinding.ActivityMainBinding
+import cx.aphex.chatgpt.databinding.ActivityMainBinding
 import io.noties.markwon.Markwon
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @BetaOpenAI
@@ -32,6 +34,8 @@ class MainActivity : AppCompatActivity() {
 
     private val answerChunks = SpannableStringBuilder()
 
+    private lateinit var blinkingCaretSpan: BlinkingCaretSpan
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -39,7 +43,9 @@ class MainActivity : AppCompatActivity() {
 
 
         binding.searchQuery.setOnEditorActionListener { _, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH || event?.keyCode == KeyEvent.KEYCODE_ENTER) {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)
+            ) {
                 performSearch()
                 true
             } else {
@@ -47,49 +53,43 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        pulsingAnimation = Animations.createPulsingAnimation(binding.logo)
+        blinkingCaretSpan = BlinkingCaretSpan(ContextCompat.getColor(this, R.color.white))
 
-        val blinkingCaretSpan = BlinkingCaretSpan(ContextCompat.getColor(this, R.color.white))
+        pulsingAnimation = Animations.createPulsingAnimation(binding.logo)
 
         // Collect answer chunks and update the UI
         lifecycleScope.launch {
-            viewModel.answerChunks.collect { newAnswerChunks ->
-                binding.answerCard.visibility = View.VISIBLE
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
 
-                if (newAnswerChunks.isNotEmpty()) {
+                viewModel.bufferedAnswerChunks.collect { newChunk ->
+//                    answerChunks.clear()
+                    Log.d("mainactivity", "MAINACTIVITY got chunk: $newChunk")
+                    Log.d("mainactivity", "MAINACTIVITY CHUNKS: $answerChunks")
+                    binding.answerCard.visibility = View.VISIBLE
+
                     // Remove the previous caret if it exists
-                    removeCaret(blinkingCaretSpan)
-
-                    newAnswerChunks.forEach { chunk ->
-                        answerChunks.append(chunk)
-                    }
+                    removeCaret()
+                    delay(48)
+                    answerChunks.append(newChunk)
 
                     // Append the blinking caret and apply the BlinkingCaretSpan
                     val caretPosition = answerChunks.length
                     answerChunks.append("\u2588") // Unicode character for a block caret
-                    answerChunks.setSpan(
-                        blinkingCaretSpan,
-                        caretPosition,
-                        caretPosition + 1,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
+//                                    answerChunks.setSpan(
+//                                        blinkingCaretSpan,
+//                                        caretPosition,
+//                                        caretPosition + 1,
+//                                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+//                                    )
 
-                    blinkingCaretAnimator = createCaretAnimator(blinkingCaretSpan)
+//                                    blinkingCaretAnimator = createCaretAnimator(blinkingCaretSpan)
 
                     // Update the Markdown view
-                    markwon.setMarkdown(binding.markdownView, answerChunks.toString())
-
+                    updateMarkdownView()
                 }
             }
         }
 
-        lifecycleScope.launch {
-            viewModel.sources.collect { sources ->
-                removeCaret(blinkingCaretSpan)
-                binding.sourcesView.visibility = View.VISIBLE
-                markwon.setMarkdown(binding.sourcesView, sources)
-            }
-        }
 
         lifecycleScope.launch {
             viewModel.isFetchingAnswer.collect { isFetching ->
@@ -99,13 +99,25 @@ class MainActivity : AppCompatActivity() {
                     pulsingAnimation.cancel()
                     binding.logo.scaleX = 1f
                     binding.logo.scaleY = 1f
+                    lifecycleScope.launch {
+                        delay(1000)
+                        removeCaret()
+                        updateMarkdownView()
+                    }
                 }
             }
         }
     }
 
-    private fun removeCaret(blinkingCaretSpan: BlinkingCaretSpan) {
-        val previousCaretPosition = answerChunks.length - 1
+    private fun updateMarkdownView() {
+        markwon.setMarkdown(
+            binding.markdownView,
+            answerChunks.toString()
+        )
+    }
+
+    private fun removeCaret() {
+        val previousCaretPosition = answerChunks.lastIndex
         if (previousCaretPosition >= 0) {
             answerChunks.removeSpan(blinkingCaretSpan)
             answerChunks.delete(previousCaretPosition, previousCaretPosition + 1)
