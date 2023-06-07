@@ -62,5 +62,6 @@ dependencies {
     // OpenAI  Kotlin API client BOM
     implementation platform('com.aallam.openai:openai-client-bom:3.2.0')
     implementation 'com.aallam.openai:openai-client'
+    implementation 'io.ktor:ktor-client-okhttp'
 
 }

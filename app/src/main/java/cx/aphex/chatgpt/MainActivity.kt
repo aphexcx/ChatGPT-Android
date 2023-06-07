@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity() {
                     binding.logo.scaleX = 1f
                     binding.logo.scaleY = 1f
                     lifecycleScope.launch {
-                        delay(1000)
+                        delay(2000)
                         removeCaret()
                         updateMarkdownView()
                     }
