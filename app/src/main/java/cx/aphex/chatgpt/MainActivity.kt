@@ -35,9 +35,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -45,7 +51,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aallam.openai.api.BetaOpenAI
 import io.noties.markwon.Markwon
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(
+    ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalComposeUiApi::class
+)
 @BetaOpenAI
 class MainActivity : ComponentActivity() {
 
@@ -77,7 +86,14 @@ class MainActivity : ComponentActivity() {
                                 value = query,
                                 onValueChange = { newValue: String -> query = newValue },
                                 label = { Text("Message") },
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .onKeyEvent {
+                                        if (it.key == Key.Enter && it.type == KeyEventType.KeyUp) {
+                                            performSearch(query)
+                                        }
+                                        true
+                                    },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(
                                     imeAction = ImeAction.Send,
