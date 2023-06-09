@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.chat.ChatCompletionChunk
+import com.aallam.openai.api.chat.ChatMessage
+import com.aallam.openai.api.chat.ChatRole
 import cx.aphex.chatgpt.api.OpenAIClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -32,6 +34,28 @@ class MainViewModel : ViewModel() {
         get() = _isFetchingAnswer
 
     val allChunks = MutableStateFlow<List<String>>(listOf())
+
+    private val _chatLog = MutableStateFlow<List<ChatMessage>>(emptyList())
+    val chatLog: StateFlow<List<ChatMessage>> = _chatLog
+
+    fun sendMessage(query: String) {
+        if (query.isNotBlank()) {
+            // Add the user message to the chat log
+            _chatLog.value = _chatLog.value + ChatMessage(
+                ChatRole.User,
+                query
+            )
+
+            // Add a loading bot message to the chat log
+            _chatLog.value =
+                _chatLog.value + ChatMessage(ChatRole.Assistant, "Loading...")
+
+            // Start the search
+            search(query)
+        }
+    }
+
+
     fun search(query: String) {
         Log.d("search", "search called!!!!")
         viewModelScope.launch(Dispatchers.Main) {
@@ -45,6 +69,12 @@ class MainViewModel : ViewModel() {
                         allChunks.update { it + content }
                         withContext(Dispatchers.Main) {
                             _answerChunks.emit(content)
+                            // Update the last bot message in the chat log with the response
+                            _chatLog.value = _chatLog.value.dropLast(1) + ChatMessage(
+                                ChatRole.Assistant,
+                                allChunks.value.joinToString(""),
+                            )
+
                             Log.d("search", "chunks so far: ${allChunks}")
                         }
                     }
