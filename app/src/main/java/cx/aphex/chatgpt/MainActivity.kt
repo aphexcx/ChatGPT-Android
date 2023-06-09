@@ -49,6 +49,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aallam.openai.api.BetaOpenAI
+import dev.jeziellago.compose.markdowntext.MarkdownText
 import io.noties.markwon.Markwon
 
 @OptIn(
@@ -134,7 +135,15 @@ class MainActivity : ComponentActivity() {
                                         val answerChunks =
                                             viewModel.allChunks.collectAsStateWithLifecycle()
 //                                        answerChunks.for { chunk ->
-                                        Text(answerChunks.value.joinToString(""))
+//                                        Text(answerChunks.value.joinToString(""))
+                                        MarkdownText(markdown = answerChunks.value.joinToString(""))
+//                                            .also { tv->
+//                                            markwon.setMarkdown(
+//                                                tv,
+//                                                answerChunks.toString())
+//                                        }
+
+
                                     }
                                 }
 
