@@ -3,27 +3,31 @@ package cx.aphex.chatgpt
 import BlinkingCaretSpan
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
@@ -32,11 +36,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aallam.openai.api.BetaOpenAI
 import io.noties.markwon.Markwon
@@ -58,67 +62,68 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var blinkingCaretSpan: BlinkingCaretSpan
 
+
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                Surface(
-                    color = Color(
-                        ContextCompat.getColor(
-                            this,
-                            R.color.gpt4purple
-                        )
-                    ),
-                    modifier = Modifier.fillMaxHeight()
-                ) { // gpt4purple
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.logo_chatgpt),
-                            contentDescription = "Logo",
-                            modifier = Modifier
-                                .size(64.dp)
-                                .padding(top = 24.dp)
-                        )
+                Surface(color = Color(0xFF4A148C)) { // gpt4purple
+                    Scaffold(
+                        bottomBar = {
+                            var query by remember { mutableStateOf("") }
 
-                        var query by remember { mutableStateOf("") }
-
-                        OutlinedTextField(
-                            value = query,
-                            onValueChange = { newValue: String -> query = newValue },
-                            label = { Text("Search") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(
-                                imeAction = ImeAction.Send,
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onSend = {
-                                    performSearch(query)
-                                }
+                            OutlinedTextField(
+                                value = query,
+                                onValueChange = { newValue: String -> query = newValue },
+                                label = { Text("Message") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(
+                                    imeAction = ImeAction.Send,
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onSend = {
+                                        performSearch(query)
+                                    }
+                                )
                             )
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-//                            elevation = CardElevation() 4.dp,
-                            shape = MaterialTheme.shapes.medium
+                        }
+                    ) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            FlowRow {
-                                // Collect answer chunks and update the UI
-                                val answerChunks =
-                                    viewModel.allChunks.collectAsStateWithLifecycle()
-//                                LaunchedEffect(answerChunks) {
-//                                    answerChunks.value.forEach { newChunk ->
-//                                        delay(48)
-                                Text(answerChunks.value.joinToString(""))
-//                                    }
-                            }
+                            // Collect answer chunks and update the UI
 
+                            items(1) { chunk ->
+
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = MaterialTheme.shapes.medium
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.logo_chatgpt),
+                                            contentDescription = "Logo",
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .clip(CircleShape)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        val answerChunks =
+                                            viewModel.allChunks.collectAsStateWithLifecycle()
+//                                        answerChunks.for { chunk ->
+                                        Text(answerChunks.value.joinToString(""))
+                                    }
+                                }
+
+//                            }
+                            }
                         }
                     }
                 }
