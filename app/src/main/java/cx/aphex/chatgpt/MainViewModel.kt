@@ -9,9 +9,13 @@ import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import cx.aphex.chatgpt.api.OpenAIClient
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
@@ -27,7 +31,8 @@ class MainViewModel : ViewModel() {
         get() = _answerChunks
 
     // Intermediate flow that buffers the chunks
-    val bufferedAnswerChunks: StateFlow<String> = _answerChunks
+    private val _bufferedAnswerChunks = MutableSharedFlow<String>()
+    val bufferedAnswerChunks: SharedFlow<String> = _bufferedAnswerChunks.buffer()
 
     private val _isFetchingAnswer = MutableStateFlow(false)
     val isFetchingAnswer: StateFlow<Boolean>
@@ -51,6 +56,15 @@ class MainViewModel : ViewModel() {
                 _chatLog.value + ChatMessage(ChatRole.Assistant, "Loading...")
 
             // Start the search
+            viewModelScope.launch {
+                bufferedAnswerChunks.collectLatest { content ->
+                    delay(10)
+                    _chatLog.value = _chatLog.value.dropLast(1) + ChatMessage(
+                        ChatRole.Assistant,
+                        content,
+                    )
+                }
+            }
             search(query)
         }
     }
@@ -70,7 +84,7 @@ class MainViewModel : ViewModel() {
                         Log.d("search", "${chunk} content: $content")
                         allChunks.update { it + content }
                         withContext(Dispatchers.Main) {
-                            _answerChunks.emit(content)
+                            _bufferedAnswerChunks.emit(content)
                             // Update the last bot message in the chat log with the response
                             _chatLog.value = _chatLog.value.dropLast(1) + ChatMessage(
                                 ChatRole.Assistant,
