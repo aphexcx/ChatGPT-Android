@@ -1,136 +1,122 @@
 package cx.aphex.chatgpt
 
-import BlinkingCaretSpan
 import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.os.Bundle
-import android.text.SpannableStringBuilder
-import android.util.Log
-import android.view.KeyEvent
-import android.view.View
-import android.view.inputmethod.EditorInfo
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aallam.openai.api.BetaOpenAI
-import cx.aphex.chatgpt.databinding.ActivityMainBinding
 import io.noties.markwon.Markwon
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
+@OptIn(
+    ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalComposeUiApi::class
+)
 @BetaOpenAI
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
     private lateinit var pulsingAnimation: AnimatorSet
-    private lateinit var binding: ActivityMainBinding
+
     private val viewModel: MainViewModel by viewModels()
 
     private val markwon: Markwon by lazy { Markwon.create(this) }
 
-    lateinit var blinkingCaretAnimator: ObjectAnimator
-
-    private val answerChunks = SpannableStringBuilder()
-
-    private lateinit var blinkingCaretSpan: BlinkingCaretSpan
-
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContent {
+            MaterialTheme {
+                Surface(color = Color(0xFF4A148C)) { // gpt4purple
+                    Scaffold(
+                        bottomBar = {
+                            var query by remember { mutableStateOf("") }
+                            OutlinedTextField(
+                                value = query,
+                                onValueChange = { newValue: String -> query = newValue },
+                                label = { Text("Message") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .onKeyEvent {
+                                        if (it.key == Key.Enter && it.type == KeyEventType.KeyUp) {
+                                            viewModel.sendMessage(query)
+                                            query = ""
+                                        }
+                                        true
+                                    },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(
+                                    imeAction = ImeAction.Send,
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onSend = {
+                                        viewModel.sendMessage(query)
+                                        query = ""
+                                    }
+                                )
+                            )
+                        }
+                    ) {
+                        val chatLog = viewModel.chatLog.collectAsStateWithLifecycle()
 
+                        val listState = rememberLazyListState()
 
-        binding.searchQuery.setOnEditorActionListener { _, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
-                (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)
-            ) {
-                performSearch()
-                true
-            } else {
-                false
-            }
-        }
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(it)
+                                .consumeWindowInsets(it),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            // Collect chat log and update the UI
+                            items(chatLog.value) { message ->
+                                ChatMessage(message)
+                            }
+                        }
 
-        blinkingCaretSpan = BlinkingCaretSpan(ContextCompat.getColor(this, R.color.white))
-
-        pulsingAnimation = Animations.createPulsingAnimation(binding.logo)
-
-        // Collect answer chunks and update the UI
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-
-                viewModel.bufferedAnswerChunks.collect { newChunk ->
-//                    answerChunks.clear()
-                    Log.d("mainactivity", "MAINACTIVITY got chunk: $newChunk")
-                    Log.d("mainactivity", "MAINACTIVITY CHUNKS: $answerChunks")
-                    binding.answerCard.visibility = View.VISIBLE
-
-                    // Remove the previous caret if it exists
-                    removeCaret()
-                    delay(48)
-                    answerChunks.append(newChunk)
-
-                    // Append the blinking caret and apply the BlinkingCaretSpan
-                    val caretPosition = answerChunks.length
-                    answerChunks.append("\u2588") // Unicode character for a block caret
-//                                    answerChunks.setSpan(
-//                                        blinkingCaretSpan,
-//                                        caretPosition,
-//                                        caretPosition + 1,
-//                                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-//                                    )
-
-//                                    blinkingCaretAnimator = createCaretAnimator(blinkingCaretSpan)
-
-                    // Update the Markdown view
-                    updateMarkdownView()
-                }
-            }
-        }
-
-
-        lifecycleScope.launch {
-            viewModel.isFetchingAnswer.collect { isFetching ->
-                if (isFetching) {
-                    pulsingAnimation.start()
-                } else {
-                    pulsingAnimation.cancel()
-                    binding.logo.scaleX = 1f
-                    binding.logo.scaleY = 1f
-                    lifecycleScope.launch {
-                        delay(2000)
-                        removeCaret()
-                        updateMarkdownView()
+                        // Scroll to the last message when a new one is received
+                        LaunchedEffect(chatLog.value) {
+                            listState.animateScrollToItem(chatLog.value.lastIndex.coerceAtLeast(0))
+                        }
                     }
                 }
             }
-        }
-    }
-
-    private fun updateMarkdownView() {
-        markwon.setMarkdown(
-            binding.markdownView,
-            answerChunks.toString()
-        )
-    }
-
-    private fun removeCaret() {
-        val previousCaretPosition = answerChunks.lastIndex
-        if (previousCaretPosition >= 0) {
-            answerChunks.removeSpan(blinkingCaretSpan)
-            answerChunks.delete(previousCaretPosition, previousCaretPosition + 1)
-        }
-    }
-
-    private fun performSearch() {
-        val query = binding.searchQuery.text.toString()
-        binding.answerCard.visibility = View.GONE
-        binding.sourcesView.visibility = View.GONE
-        answerChunks.clear()
-        if (query.isNotBlank()) {
-            viewModel.search(query)
         }
     }
 }
