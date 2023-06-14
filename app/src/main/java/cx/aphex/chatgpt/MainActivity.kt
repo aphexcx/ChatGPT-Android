@@ -8,10 +8,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,6 +23,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,7 +65,6 @@ class MainActivity : ComponentActivity() {
                     Scaffold(
                         bottomBar = {
                             var query by remember { mutableStateOf("") }
-
                             OutlinedTextField(
                                 value = query,
                                 onValueChange = { newValue: String -> query = newValue },
@@ -90,18 +93,26 @@ class MainActivity : ComponentActivity() {
                     ) {
                         val chatLog = viewModel.chatLog.collectAsStateWithLifecycle()
 
+                        val listState = rememberLazyListState()
+
                         LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
+                            state = listState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(it)
+                                .consumeWindowInsets(it),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             // Collect chat log and update the UI
-
                             items(chatLog.value) { message ->
                                 ChatMessage(message)
                             }
+                        }
 
-//                            }
+                        // Scroll to the last message when a new one is received
+                        LaunchedEffect(chatLog.value) {
+                            listState.animateScrollToItem(chatLog.value.lastIndex.coerceAtLeast(0))
                         }
                     }
                 }

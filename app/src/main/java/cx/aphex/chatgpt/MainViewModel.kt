@@ -58,9 +58,11 @@ class MainViewModel : ViewModel() {
 
     fun search(query: String) {
         Log.d("search", "search called!!!!")
+        allChunks.value = listOf()
         viewModelScope.launch(Dispatchers.Main) {
             _isFetchingAnswer.emit(true)
-            val answer: Flow<ChatCompletionChunk> = OpenAIClient.generateAnswer(query)
+            val answer: Flow<ChatCompletionChunk> =
+                OpenAIClient.generateAnswer(query, _chatLog.value)
 
             answer
                 .onEach { chunk ->

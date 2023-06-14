@@ -24,14 +24,17 @@ object OpenAIClient {
 
     val openAI = OpenAI(config)
 
-    fun generateAnswer(prompt: String): Flow<ChatCompletionChunk> {
+    fun generateAnswer(prompt: String, history: List<ChatMessage>): Flow<ChatCompletionChunk> {
         val chatCompletionRequest = ChatCompletionRequest(
             model = ModelId("gpt-3.5-turbo"),
             messages = listOf(
                 ChatMessage(
                     role = ChatRole.System,
                     content = "You are a helpful assistant that accurately answers the user's queries based on the given text."
-                ),
+                )
+            )
+                    + history
+                    + listOf(
                 ChatMessage(
                     role = ChatRole.User,
                     content = prompt
