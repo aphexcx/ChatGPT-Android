@@ -37,29 +37,29 @@ class MainViewModel(
     val isFetchingAnswer: StateFlow<Boolean>
         get() = _isFetchingAnswer
 
-    fun sendMessage(query: String) {
-        if (query.isNotBlank()) {
+    fun sendMessage(content: String, useGPT4: Boolean) {
+        if (content.isNotBlank()) {
             // Add the user message to the chat log
             _chatLog.value = _chatLog.value + ChatMessage(
                 ChatRole.User,
-                query
+                content
             )
 
             // Add a loading bot message to the chat log
             _chatLog.value = _chatLog.value + ChatMessage(ChatRole.Assistant, "\u2588")
-            submitQuery(query)
+            generateAnswer(content, useGPT4)
         }
     }
 
-    private fun submitQuery(query: String) {
-        Log.d("submitQuery", "submitQuery called!!!!")
+    private fun generateAnswer(content: String, useGPT4: Boolean) {
+        Log.d("generateAnswer", "submitQuery called!!!!")
 
         viewModelScope.launch(defaultDispatcher) {
             _isFetchingAnswer.emit(true)
 
             val currentAnswerChunks = mutableListOf<String>()
 
-            OpenAIClient.generateAnswer(query, _chatLog.value)
+            OpenAIClient.generateAnswer(content, chatLog.value, useGPT4)
                 .onStart {
                     currentAnswerChunks.clear()
                 }
@@ -70,12 +70,12 @@ class MainViewModel(
                 .flowOn(defaultDispatcher)
                 .onEach { content ->
                     Log.d(
-                        "submitQuery",
-                        "buffer collect latest: got $content, currentAnswerChunks= ${currentAnswerChunks}"
+                        "generateAnswer",
+                        "got $content, currentAnswerChunks= ${currentAnswerChunks}"
                     )
                     delay(16)
                     currentAnswerChunks.add(content)
-                    Log.d("submitQuery", "added to currentAnswerChunks= ${currentAnswerChunks}")
+                    Log.d("generateAnswer", "added to currentAnswerChunks= ${currentAnswerChunks}")
                     updateLastChatMessage(currentAnswerChunks.joinToString("") + "\u2588")
                 }
                 .onCompletion { cause ->
