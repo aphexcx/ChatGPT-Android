@@ -6,10 +6,20 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material.Switch
+import androidx.compose.material.Text
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -60,8 +70,31 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 Surface(color = Color(0xFF4A148C)) { // gpt4purple
-                    Scaffold(
-                        bottomBar = {
+                    Surface(color = Color(0xFF4A148C)) { // gpt4purple
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Top,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            var useGPT4 by remember { mutableStateOf(false) }
+
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("GPT-3.5", textAlign = TextAlign.End)
+                                Switch(
+                                    checked = useGPT4,
+                                    onCheckedChange = { useGPT4 = !useGPT4 },
+                                    modifier = Modifier.padding(horizontal = 8.dp)
+                                )
+                                Text("GPT-4", textAlign = TextAlign.Start)
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Scaffold(
+                                bottomBar = {
                             var query by remember { mutableStateOf("") }
                             OutlinedTextField(
                                 value = query,
@@ -71,7 +104,7 @@ class MainActivity : ComponentActivity() {
                                     .fillMaxWidth()
                                     .onKeyEvent {
                                         if (it.key == Key.Enter && it.type == KeyEventType.KeyUp) {
-                                            viewModel.sendMessage(query)
+                                            viewModel.sendMessage(query, useGPT4)
                                             query = ""
                                         }
                                         true
