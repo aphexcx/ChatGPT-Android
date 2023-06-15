@@ -62,7 +62,7 @@ fun ChatMessage(message: ChatMessage, useGPT4: Boolean) {
                             painter = painterResource(id = it),
                             contentDescription = "Profile",
                             modifier = Modifier
-                                .size(24.dp)
+                                .size(32.dp)
                                 .padding(2.dp)
                                 .clip(CircleShape),
                             colorFilter = ColorFilter.tint(profileTint)
@@ -74,15 +74,15 @@ fun ChatMessage(message: ChatMessage, useGPT4: Boolean) {
                         Text(
                             text = it,
                             color = Color.LightGray,
-                            fontSize = 12.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
                 }
             }
 
-            Column(modifier = Modifier.padding(start = 36.dp, top = 0.dp, end = 16.dp)) {
-                MarkdownText(markdown = message.content)
+            Column(modifier = Modifier.padding(start = 45.dp, top = 0.dp, end = 16.dp, bottom = 4.dp)) {
+                MarkdownText(markdown = message.content, fontSize = 16.sp)
             }
         }
     }

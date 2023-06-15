@@ -40,9 +40,11 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aallam.openai.api.BetaOpenAI
 import io.noties.markwon.Markwon
@@ -114,13 +116,25 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.padding(16.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text("GPT-3.5", textAlign = TextAlign.End)
+                                        Text(
+                                            "GPT-3.5",
+                                            textAlign = TextAlign.End,
+                                            fontSize = 16.sp,
+                                            color = Color.Gray,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                         Switch(
                                             checked = useGPT4,
                                             onCheckedChange = { useGPT4 = !useGPT4 },
                                             modifier = Modifier.padding(horizontal = 8.dp)
                                         )
-                                        Text("GPT-4", textAlign = TextAlign.Start)
+                                        Text(
+                                            "GPT-4",
+                                            textAlign = TextAlign.Start,
+                                            fontSize = 16.sp,
+                                            color = Color.Gray,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     }
 
                                     Spacer(modifier = Modifier.height(16.dp))
