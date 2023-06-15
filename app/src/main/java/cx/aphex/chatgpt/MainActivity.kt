@@ -1,7 +1,6 @@
 package cx.aphex.chatgpt
 
 import android.animation.AnimatorSet
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -56,7 +55,6 @@ class MainActivity : ComponentActivity() {
 
     private val markwon: Markwon by lazy { Markwon.create(this) }
 
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {

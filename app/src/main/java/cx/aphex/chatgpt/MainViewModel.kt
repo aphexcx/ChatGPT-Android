@@ -4,39 +4,38 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aallam.openai.api.BetaOpenAI
-import com.aallam.openai.api.chat.ChatCompletionChunk
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import cx.aphex.chatgpt.api.OpenAIClient
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @BetaOpenAI
-class MainViewModel : ViewModel() {
-    private val _answerChunks = MutableStateFlow<String>("")
-    val answerChunks: StateFlow<String>
-        get() = _answerChunks
+class MainViewModel(
+    private val defaultDispatcher: CoroutineContext = Dispatchers.IO.limitedParallelism(1)
+) : ViewModel() {
 
-    // Intermediate flow that buffers the chunks
-    val bufferedAnswerChunks: StateFlow<String> = _answerChunks
+    private val _chatLog = MutableStateFlow<List<ChatMessage>>(emptyList())
+    val chatLog: StateFlow<List<ChatMessage>> = _chatLog
 
     private val _isFetchingAnswer = MutableStateFlow(false)
     val isFetchingAnswer: StateFlow<Boolean>
         get() = _isFetchingAnswer
-
-    val allChunks = MutableStateFlow<List<String>>(listOf())
-
-    private val _chatLog = MutableStateFlow<List<ChatMessage>>(emptyList())
-    val chatLog: StateFlow<List<ChatMessage>> = _chatLog
 
     fun sendMessage(query: String) {
         if (query.isNotBlank()) {
@@ -47,47 +46,56 @@ class MainViewModel : ViewModel() {
             )
 
             // Add a loading bot message to the chat log
-            _chatLog.value =
-                _chatLog.value + ChatMessage(ChatRole.Assistant, "Loading...")
-
-            // Start the search
-            search(query)
+            _chatLog.value = _chatLog.value + ChatMessage(ChatRole.Assistant, "\u2588")
+            submitQuery(query)
         }
     }
 
+    private fun submitQuery(query: String) {
+        Log.d("submitQuery", "submitQuery called!!!!")
 
-    fun search(query: String) {
-        Log.d("search", "search called!!!!")
-        allChunks.value = listOf()
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch(defaultDispatcher) {
             _isFetchingAnswer.emit(true)
-            val answer: Flow<ChatCompletionChunk> =
-                OpenAIClient.generateAnswer(query, _chatLog.value)
 
-            answer
-                .onEach { chunk ->
-                    chunk.choices.firstOrNull()?.delta?.content?.let { content ->
-                        Log.d("search", "${chunk} content: $content")
-                        allChunks.update { it + content }
-                        withContext(Dispatchers.Main) {
-                            _answerChunks.emit(content)
-                            // Update the last bot message in the chat log with the response
-                            _chatLog.value = _chatLog.value.dropLast(1) + ChatMessage(
-                                ChatRole.Assistant,
-                                allChunks.value.joinToString(""),
-                            )
+            val currentAnswerChunks = mutableListOf<String>()
 
-                            Log.d("search", "chunks so far: ${allChunks}")
-                        }
-                    }
+            OpenAIClient.generateAnswer(query, _chatLog.value)
+                .onStart {
+                    currentAnswerChunks.clear()
+                }
+                .mapNotNull { chunk ->
+                    chunk.choices.firstOrNull()?.delta?.content
+                }
+                .buffer()
+                .flowOn(defaultDispatcher)
+                .onEach { content ->
+                    Log.d(
+                        "submitQuery",
+                        "buffer collect latest: got $content, currentAnswerChunks= ${currentAnswerChunks}"
+                    )
+                    delay(16)
+                    currentAnswerChunks.add(content)
+                    Log.d("submitQuery", "added to currentAnswerChunks= ${currentAnswerChunks}")
+                    updateLastChatMessage(currentAnswerChunks.joinToString("") + "\u2588")
                 }
                 .onCompletion { cause ->
                     _isFetchingAnswer.emit(false)
-//                    _answerChunks.emit(chunks)
+                    updateLastChatMessage(currentAnswerChunks.joinToString(""))
                 }
-                .catch { cause -> Log.e("search", "Exception: $cause") }
+                .catch { cause ->
+                    Log.e("search", "Exception: $cause")
+                    updateLastChatMessage(cause.message ?: "Error")
+                }
                 .launchIn(viewModelScope)
         }
     }
 
+    private suspend fun updateLastChatMessage(content: String) {
+        withContext(Dispatchers.Main) {
+            _chatLog.value = _chatLog.value.dropLast(1) + ChatMessage(
+                ChatRole.Assistant,
+                content,
+            )
+        }
+    }
 }
