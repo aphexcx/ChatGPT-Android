@@ -73,7 +73,7 @@ class MainViewModel(
                         "submitQuery",
                         "buffer collect latest: got $content, currentAnswerChunks= ${currentAnswerChunks}"
                     )
-                    delay(32)
+                    delay(16)
                     currentAnswerChunks.add(content)
                     Log.d("submitQuery", "added to currentAnswerChunks= ${currentAnswerChunks}")
                     updateLastChatMessage(currentAnswerChunks.joinToString("") + "\u2588")
