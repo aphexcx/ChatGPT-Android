@@ -24,9 +24,9 @@ object OpenAIClient {
 
     val openAI = OpenAI(config)
 
-    fun generateAnswer(prompt: String, history: List<ChatMessage>): Flow<ChatCompletionChunk> {
+    fun generateAnswer(prompt: String, history: List<ChatMessage>, useGPT4: Boolean): Flow<ChatCompletionChunk> {
         val chatCompletionRequest = ChatCompletionRequest(
-            model = ModelId("gpt-3.5-turbo"),
+            model = if (useGPT4) ModelId("gpt-4") else ModelId("gpt-3.5-turbo"),
             messages = listOf(
                 ChatMessage(
                     role = ChatRole.System,
