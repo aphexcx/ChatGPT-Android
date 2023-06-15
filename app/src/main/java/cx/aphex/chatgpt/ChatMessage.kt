@@ -3,6 +3,10 @@
 package cx.aphex.chatgpt
 
 import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.colorspace.ColorSpaces
+import androidx.compose.ui.graphics.colorspace.transferParameters
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -48,12 +52,17 @@ fun ChatMessage(message: ChatMessage, useGPT4: Boolean) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             message.profileImage?.let {
+                val colorMatrix = ColorMatrix().apply {
+                    val color = if (useGPT4) Color(0xFF4A148C) else Color(0xFF4CAF50)
+                    setColorFilter(color.transferParameters(ColorSpaces.Srgb))
+                }
                 Image(
                     painter = painterResource(id = it),
                     contentDescription = "Profile",
                     modifier = Modifier
                         .size(32.dp)
-                        .clip(CircleShape)
+                        .clip(CircleShape),
+                    colorFilter = ColorFilter.colorMatrix(colorMatrix)
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
