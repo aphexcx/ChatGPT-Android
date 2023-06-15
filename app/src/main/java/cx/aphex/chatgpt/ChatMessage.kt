@@ -3,6 +3,7 @@
 package cx.aphex.chatgpt
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,8 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,10 +39,9 @@ private val ChatMessage.profileImage: Int?
 
 
 @Composable
-fun ChatMessage(message: ChatMessage) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium
+fun ChatMessage(message: ChatMessage, useGPT4: Boolean) {
+    Surface(
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier.padding(8.dp),
@@ -57,7 +57,10 @@ fun ChatMessage(message: ChatMessage) {
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
-            MarkdownText(markdown = message.content)
+            Column() {
+                message.name?.let { Text(it) }
+                MarkdownText(markdown = message.content)
+            }
         }
     }
 }

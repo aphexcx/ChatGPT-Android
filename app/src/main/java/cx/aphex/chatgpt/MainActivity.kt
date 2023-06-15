@@ -128,7 +128,7 @@ class MainActivity : ComponentActivity() {
                             } else {
                                 // Collect chat log and update the UI
                                 items(chatLog.value) { message ->
-                                    ChatMessage(message)
+                                    ChatMessage(message, useGPT4)
                                 }
                             }
                         }
