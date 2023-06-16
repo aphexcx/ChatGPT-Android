@@ -87,8 +87,24 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0'
 
     implementation "io.noties.markwon:core:4.6.2"
-    implementation 'com.github.jeziellago:compose-markdown:0.3.3'
-    implementation("io.coil-kt:coil:2.3.0")
+//    implementation 'com.github.jeziellago:compose-markdown:0.3.3'
+//    implementation project(':compose-markdown')
+
+    // manually included compose-markdown dependencies, remove after my line-height PR is accepted
+    final def markwon_version = '4.6.2'
+
+    implementation "io.noties.markwon:core:$markwon_version"
+    implementation "io.noties.markwon:ext-strikethrough:$markwon_version"
+    implementation "io.noties.markwon:ext-tables:$markwon_version"
+    implementation "io.noties.markwon:html:$markwon_version"
+    implementation "io.noties.markwon:linkify:$markwon_version"
+    implementation "com.github.jeziellago:Markwon:58aa5aba6a"
+
+    implementation("io.coil-kt:coil:2.2.2")
+    implementation files('markdowntext-debug.aar')
+//    implementation project(path: ':compose-markdown', configuration: 'release')
+//    implementation("io.coil-kt:coil:2.3.0")
+
 
     // OpenAI  Kotlin API client BOM
     implementation platform('com.aallam.openai:openai-client-bom:3.2.0')

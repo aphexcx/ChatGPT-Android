@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -45,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aallam.openai.api.BetaOpenAI
+import cx.aphex.chatgpt.ui.appTypography
 import io.noties.markwon.Markwon
 
 @OptIn(
@@ -63,7 +65,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            MaterialTheme(typography = appTypography) {
                 Surface(color = Color(0xFF4A148C)) { // gpt4purple
                     var useGPT4 by remember { mutableStateOf(false) }
                     Scaffold(
@@ -71,6 +73,7 @@ class MainActivity : ComponentActivity() {
                             var query by remember { mutableStateOf("") }
                             OutlinedTextField(
                                 value = query,
+                                textStyle = typography.bodyMedium,
                                 onValueChange = { newValue: String -> query = newValue },
                                 label = { Text("Message") },
                                 modifier = Modifier
@@ -114,13 +117,23 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.padding(16.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text("GPT-3.5", textAlign = TextAlign.End)
+                                        Text(
+                                            "GPT-3.5",
+                                            textAlign = TextAlign.End,
+                                            color = Color.Gray,
+                                            style = typography.labelLarge
+                                        )
                                         Switch(
                                             checked = useGPT4,
                                             onCheckedChange = { useGPT4 = !useGPT4 },
                                             modifier = Modifier.padding(horizontal = 8.dp)
                                         )
-                                        Text("GPT-4", textAlign = TextAlign.Start)
+                                        Text(
+                                            "GPT-4",
+                                            textAlign = TextAlign.Start,
+                                            color = Color.Gray,
+                                            style = typography.labelLarge
+                                        )
                                     }
 
                                     Spacer(modifier = Modifier.height(16.dp))
