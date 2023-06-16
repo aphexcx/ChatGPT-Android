@@ -1,19 +1,21 @@
 # ChatGPT for Android
 
-This is an Android application that allows users to interact with OpenAI's ChatGPT model. Users can send messages and receive responses from the ChatGPT model in a chat-like interface.
+An Android implementation of OpenAI's official ChatGPT iOS app.
+Users can send messages and receive responses from the GPT-3.5 and GPT-4 models in a chat-like
+interface.
 
 ## Features
 
 - Chat-like interface for easy interaction with ChatGPT
-- Customizable text appearance
-- Smooth animations for a better user experience
+- Pick between GPT-3.5 and GPT-4
+- Custom fonts and smooth animations for cool UX;)
 
 ## Installation
 
 1. Clone this repository:
 
 ```bash
-git clone https://github.com/yourusername/ChatGPT.git
+git clone https://github.com/aphexcx/ChatGPT-Android.git
 ```
 
 2. Open the project in Android Studio
