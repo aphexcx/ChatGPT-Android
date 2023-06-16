@@ -11,22 +11,30 @@ import cx.aphex.chatgpt.R
 
 
 val appFontFamily = FontFamily(
-    fonts = listOf(
-        Font(
-            resId = R.font.soehne_buch,
-            weight = FontWeight.W400,
-            style = FontStyle.Normal
-        ),
-        Font(
-            resId = R.font.soehne_kraftig,
-            weight = FontWeight.W500,
-            style = FontStyle.Normal
-        ),
-        Font(
-            resId = R.font.soehne_fett,
-            weight = FontWeight.W800,
-            style = FontStyle.Normal
-        ),
+    Font(
+        resId = R.font.soehne_buch,
+        weight = FontWeight.Normal,
+        style = FontStyle.Normal
+    ),
+    Font(
+        resId = R.font.soehne_buchkursiv,
+        weight = FontWeight.Normal, //400
+        style = FontStyle.Italic
+    ),
+    Font(
+        resId = R.font.soehne_kraftig, //500
+        weight = FontWeight.Medium,
+        style = FontStyle.Normal
+    ),
+    Font(
+        resId = R.font.soehne_fett, //800
+        weight = FontWeight.Bold,
+        style = FontStyle.Normal
+    )    ,
+    Font(
+        resId = R.font.soehne_fettkursiv,
+        weight = FontWeight.Bold,
+        style = FontStyle.Italic
     )
 )
 
