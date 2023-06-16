@@ -1,6 +1,12 @@
-# ChatGPT-android
+# ChatGPT for Android
 
-ChatGPT for Android.
+This is an Android application that allows users to interact with OpenAI's ChatGPT model. Users can send messages and receive responses from the ChatGPT model in a chat-like interface.
+
+## Features
+
+- Chat-like interface for easy interaction with ChatGPT
+- Customizable text appearance
+- Smooth animations for a better user experience
 
 ## Installation
 
@@ -29,3 +35,6 @@ Replace `your_api_key_here` with your actual API key.
 - [Markwon](https://github.com/noties/Markwon)
 - [OkHttp](https://github.com/square/okhttp)
 - [Jsoup](https://github.com/jhy/jsoup)
+- [Kotlin Coroutines](https://github.com/Kotlin/kotlinx.coroutines)
+- [Android Architecture Components](https://developer.android.com/topic/libraries/architecture)
+- [Material Components for Android](https://github.com/material-components/material-components-android)
