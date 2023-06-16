@@ -3,7 +3,6 @@
 package cx.aphex.chatgpt
 
 import androidx.compose.foundation.Image
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,10 +19,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
@@ -37,7 +36,7 @@ private fun ChatMessage.getNameOrFromRole(useGPT4: Boolean): String? = when (rol
 
 private val ChatMessage.profileImage: Int?
     get() = when (role) {
-        ChatRole.User -> android.R.drawable.stat_sys_headset
+        ChatRole.User -> R.drawable.face
         ChatRole.Assistant -> R.drawable.logo_chatgpt
         else -> null
     }
@@ -48,7 +47,7 @@ fun ChatMessage(message: ChatMessage, useGPT4: Boolean) {
     Surface(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column() {
+        Column {
             Row(
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp),
                 verticalAlignment = Alignment.Top,
@@ -74,15 +73,18 @@ fun ChatMessage(message: ChatMessage, useGPT4: Boolean) {
                         Text(
                             text = it,
                             color = Color.LightGray,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
+                            style = typography.labelMedium
                         )
                     }
                 }
             }
 
             Column(modifier = Modifier.padding(start = 45.dp, top = 0.dp, end = 16.dp, bottom = 4.dp)) {
-                MarkdownText(markdown = message.content, fontSize = 16.sp)
+                MarkdownText(
+                    markdown = message.content,
+                    fontResource = R.font.soehne_buch,
+                    style = typography.bodyMedium
+                )
             }
         }
     }
