@@ -8,10 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.with
@@ -59,7 +56,6 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -141,26 +137,7 @@ class MainActivity : ComponentActivity() {
                                             .clip(RoundedCornerShape(6.dp))
                                             .background(Color.Gray)
                                     ) {
-                                        val selectorWidth =
-                                            with(LocalDensity.current) { 64.dp.toPx() }
-                                        val selectorOffset = remember { mutableStateOf(0f) }
-                                        val selectorTransition = updateTransition(useGPT4)
 
-                                        selectorTransition.animateFloat(
-                                            transitionSpec = { spring(stiffness = 200f) },
-                                            label = ""
-                                        ) { if (it) 1f else 0f }.apply {
-                                            selectorOffset.value = selectorWidth * value
-                                        }
-
-//                                        val value by animateFloatAsState(
-//                                            targetValue = 100f,
-//                                            animationSpec = spring(
-//                                                dampingRatio = Spring.DampingRatioHighBouncy,
-//                                                stiffness = Spring.StiffnessMedium
-//                                            )
-//                                        )
-//                                        val alignment = remember { Alignment.CenterStart }
                                         AnimatedContent(
                                             useGPT4,
                                             modifier = Modifier
@@ -181,8 +158,6 @@ class MainActivity : ComponentActivity() {
                                                             )
                                                         )
                                             }
-//                                            transitionSpec = ContentTransform { spring(stiffness = 200f) },
-//                                            contentAlignment = if (useGPT4) Alignment.CenterEnd else Alignment.CenterStart
                                         ) {
                                             Row(
                                                 modifier = Modifier
@@ -193,22 +168,15 @@ class MainActivity : ComponentActivity() {
 
                                                 Box(
                                                     modifier = Modifier
-//                                                .offset(x = selectorOffset.value.dp)
-//                                                    .fillMaxWidth(0.5f).height(64.dp)
-//                                                        .fillMaxSize()
                                                         .fillMaxWidth(0.5f)
                                                         .height(64.dp)
-
-//                                                        .size(width = 64.dp, height = 64.dp)
                                                         .padding(4.dp)
-//                                                .fillMaxHeight()
                                                         .clip(RoundedCornerShape(6.dp))
                                                         .background(
                                                             if (useGPT4) Color(0xFF4A148C) else Color(
                                                                 0xFF4CAF50
                                                             )
                                                         )
-//                                                .offset(x = 40.dp) //value.dp) // selectorOffset.value.dp)
                                                 )
                                             }
                                         }
