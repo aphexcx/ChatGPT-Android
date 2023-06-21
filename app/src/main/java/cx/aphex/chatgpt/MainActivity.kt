@@ -63,6 +63,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aallam.openai.api.BetaOpenAI
+import cx.aphex.chatgpt.ui.DotsLoadingIndicator
 import cx.aphex.chatgpt.ui.appTypography
 import io.noties.markwon.Markwon
 
@@ -126,7 +127,12 @@ class MainActivity : ComponentActivity() {
                                     focusedLabelColor = gptColor,
                                     cursorColor = gptColor,
                                     selectionColors = TextSelectionColors(gptColor, gptColor)
-                                )
+                                ),
+                                trailingIcon = {
+                                    if (viewModel.isFetchingAnswer.collectAsStateWithLifecycle().value) {
+                                        DotsLoadingIndicator(color = gptColor)
+                                    }
+                                }
                             )
                         }
                     ) { paddingValues ->
