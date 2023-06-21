@@ -1,4 +1,4 @@
-@file:OptIn(BetaOpenAI::class)
+@file:OptIn(BetaOpenAI::class, BetaOpenAI::class)
 
 package cx.aphex.chatgpt
 

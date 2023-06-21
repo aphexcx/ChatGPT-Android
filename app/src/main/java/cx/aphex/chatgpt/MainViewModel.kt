@@ -7,8 +7,10 @@ import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import cx.aphex.chatgpt.api.OpenAIClient
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +32,10 @@ class MainViewModel(
     private val defaultDispatcher: CoroutineContext = Dispatchers.IO.limitedParallelism(1)
 ) : ViewModel() {
 
+    private val _useGPT4 = MutableStateFlow<Boolean>(false)
+    val useGPT4: StateFlow<Boolean>
+        get() = _useGPT4
+
     private val _chatLog = MutableStateFlow<List<ChatMessage>>(emptyList())
     val chatLog: StateFlow<List<ChatMessage>> = _chatLog
 
@@ -37,7 +43,13 @@ class MainViewModel(
     val isFetchingAnswer: StateFlow<Boolean>
         get() = _isFetchingAnswer
 
-    fun sendMessage(content: String, useGPT4: Boolean) {
+    private var fetchAnswerJob: Job? = null
+
+    fun setUseGPT4(useGPT4: Boolean) {
+        _useGPT4.value = useGPT4
+    }
+
+    fun sendMessage(content: String) {
         if (content.isNotBlank()) {
             // Add the user message to the chat log
             _chatLog.value = _chatLog.value + ChatMessage(
@@ -47,11 +59,11 @@ class MainViewModel(
 
             // Add a loading bot message to the chat log
             _chatLog.value = _chatLog.value + ChatMessage(ChatRole.Assistant, "\u2588")
-            generateAnswer(content, useGPT4)
+            generateAnswer(content)
         }
     }
 
-    private fun generateAnswer(content: String, useGPT4: Boolean) {
+    private fun generateAnswer(content: String) {
         Log.d("generateAnswer", "submitQuery called!!!!")
 
         viewModelScope.launch(defaultDispatcher) {
@@ -59,7 +71,7 @@ class MainViewModel(
 
             val currentAnswerChunks = mutableListOf<String>()
 
-            OpenAIClient.generateAnswer(content, chatLog.value, useGPT4)
+            fetchAnswerJob = OpenAIClient.generateAnswer(content, chatLog.value, useGPT4.value)
                 .onStart {
                     currentAnswerChunks.clear()
                 }
@@ -73,12 +85,13 @@ class MainViewModel(
                         "generateAnswer",
                         "got $content, currentAnswerChunks= ${currentAnswerChunks}"
                     )
-                    delay(16)
+                    delay(24)
                     currentAnswerChunks.add(content)
                     Log.d("generateAnswer", "added to currentAnswerChunks= ${currentAnswerChunks}")
                     updateLastChatMessage(currentAnswerChunks.joinToString("") + "\u2588")
                 }
                 .onCompletion { cause ->
+                    Log.e("search", "Cancelled: $cause")
                     _isFetchingAnswer.emit(false)
                     updateLastChatMessage(currentAnswerChunks.joinToString(""))
                 }
@@ -97,5 +110,9 @@ class MainViewModel(
                 content,
             )
         }
+    }
+
+    fun cancelFetchingAnswer() {
+        fetchAnswerJob?.cancel(CancellationException("Answer fetching canceled by user"))
     }
 }
