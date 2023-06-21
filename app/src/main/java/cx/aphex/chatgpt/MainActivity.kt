@@ -5,13 +5,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -137,46 +137,63 @@ class MainActivity : ComponentActivity() {
                                             .clip(RoundedCornerShape(6.dp))
                                             .background(Color.Gray)
                                     ) {
+                                        val boxColor by animateColorAsState(
+                                            targetValue = if (useGPT4) Color(0xFF4A148C) else Color(
+                                                0xFF4CAF50
+                                            ),
+                                            animationSpec = tween(durationMillis = 200)
+                                        )
 
-                                        AnimatedContent(
-                                            useGPT4,
+                                        Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(64.dp),
-                                            transitionSpec = {
-                                                slideInHorizontally(
-                                                    initialOffsetX = { it }, // it == fullWidth
+                                            horizontalArrangement = if (useGPT4) Arrangement.End else Arrangement.Start
+                                        ) {
+                                            AnimatedVisibility(
+                                                visible = !useGPT4,
+                                                enter = slideInHorizontally(
                                                     animationSpec = tween(
                                                         durationMillis = 200,
                                                         easing = LinearEasing
                                                     )
-                                                ) with
-                                                        slideOutHorizontally(
-                                                            animationSpec = tween(
-                                                                durationMillis = 200,
-                                                                easing = LinearEasing
-                                                            )
-                                                        )
-                                            }
-                                        ) {
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(64.dp),
-                                                horizontalArrangement = if (useGPT4) Arrangement.End else Arrangement.Start
-                                            ) {
-
+                                                ) { it },
+                                                exit = slideOutHorizontally(
+                                                    animationSpec = tween(
+                                                        durationMillis = 200,
+                                                        easing = LinearEasing
+                                                    )
+                                                ) { it }) {
                                                 Box(
                                                     modifier = Modifier
                                                         .fillMaxWidth(0.5f)
                                                         .height(64.dp)
                                                         .padding(4.dp)
                                                         .clip(RoundedCornerShape(6.dp))
-                                                        .background(
-                                                            if (useGPT4) Color(0xFF4A148C) else Color(
-                                                                0xFF4CAF50
-                                                            )
-                                                        )
+                                                        .background(boxColor)
+                                                )
+                                            }
+                                            AnimatedVisibility(visible = useGPT4,
+                                                enter = slideInHorizontally(
+                                                    animationSpec = tween(
+                                                        durationMillis = 200,
+                                                        easing = LinearEasing
+                                                    )
+                                                ) { it },
+                                                exit = slideOutHorizontally(
+                                                    animationSpec = tween(
+                                                        durationMillis = 200,
+                                                        easing = LinearEasing
+                                                    )
+                                                ) { it }
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth(0.5f)
+                                                        .height(64.dp)
+                                                        .padding(4.dp)
+                                                        .clip(RoundedCornerShape(6.dp))
+                                                        .background(boxColor)
                                                 )
                                             }
                                         }
