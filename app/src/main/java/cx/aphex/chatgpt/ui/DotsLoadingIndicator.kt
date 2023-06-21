@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
@@ -18,7 +19,7 @@ import androidx.compose.ui.unit.dp
 fun DotsLoadingIndicator(modifier: Modifier = Modifier, color: Color) {
     val infiniteTransition = rememberInfiniteTransition()
     val alpha by infiniteTransition.animateFloat(
-        initialValue = 0f,
+        initialValue = 0.1f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 500, easing = LinearEasing),
@@ -37,7 +38,7 @@ fun DotsLoadingIndicator(modifier: Modifier = Modifier, color: Color) {
             drawRect(
                 color = color.copy(alpha = squareAlpha),
                 topLeft = Offset(xOffset, yOffset),
-                size = androidx.compose.ui.geometry.Size(squareSize, squareSize)
+                size = Size(squareSize, squareSize)
             )
         }
     }

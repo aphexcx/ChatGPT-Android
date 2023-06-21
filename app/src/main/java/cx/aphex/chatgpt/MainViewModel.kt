@@ -7,8 +7,10 @@ import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import cx.aphex.chatgpt.api.OpenAIClient
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +39,8 @@ class MainViewModel(
     val isFetchingAnswer: StateFlow<Boolean>
         get() = _isFetchingAnswer
 
+    private var fetchAnswerJob: Job? = null
+
     fun sendMessage(content: String, useGPT4: Boolean) {
         if (content.isNotBlank()) {
             // Add the user message to the chat log
@@ -59,7 +63,7 @@ class MainViewModel(
 
             val currentAnswerChunks = mutableListOf<String>()
 
-            OpenAIClient.generateAnswer(content, chatLog.value, useGPT4)
+            fetchAnswerJob = OpenAIClient.generateAnswer(content, chatLog.value, useGPT4)
                 .onStart {
                     currentAnswerChunks.clear()
                 }
@@ -79,6 +83,7 @@ class MainViewModel(
                     updateLastChatMessage(currentAnswerChunks.joinToString("") + "\u2588")
                 }
                 .onCompletion { cause ->
+                    Log.e("search", "Cancelled: $cause")
                     _isFetchingAnswer.emit(false)
                     updateLastChatMessage(currentAnswerChunks.joinToString(""))
                 }
@@ -97,5 +102,9 @@ class MainViewModel(
                 content,
             )
         }
+    }
+
+    fun cancelFetchingAnswer() {
+        fetchAnswerJob?.cancel(CancellationException("Answer fetching canceled by user"))
     }
 }

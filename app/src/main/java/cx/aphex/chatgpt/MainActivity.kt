@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -33,6 +35,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonDefaults.elevatedButtonElevation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -94,46 +101,80 @@ class MainActivity : ComponentActivity() {
                         ),
                         animationSpec = tween(durationMillis = 200)
                     )
+                    val isFetchingAnswer =
+                        viewModel.isFetchingAnswer.collectAsStateWithLifecycle().value
                     Scaffold(
                         bottomBar = {
                             var query by remember { mutableStateOf("") }
-                            OutlinedTextField(
-                                value = query,
-                                textStyle = typography.bodyMedium,
-                                onValueChange = { newValue: String -> query = newValue },
-                                label = { Text("Message") },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp)
-                                    .onKeyEvent {
-                                        if (it.key == Key.Enter && it.type == KeyEventType.KeyUp) {
+                            Column() {
+                                AnimatedVisibility(
+                                    visible = isFetchingAnswer, Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                ) {
+                                    Button(
+                                        onClick = { viewModel.cancelFetchingAnswer() },
+                                        modifier = Modifier
+                                            .align(Alignment.CenterHorizontally)
+                                            .wrapContentSize(),
+                                        elevation = elevatedButtonElevation(),
+                                        shape = RoundedCornerShape(32.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = gptColor)
+                                    ) {
+                                        Icon(
+                                            Icons.Filled.Stop,
+                                            contentDescription = "Stop Icon",
+                                            tint = Color.White
+                                        )
+                                        Text(
+                                            text = "Stop generating",
+                                            color = Color.White,
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier
+                                                .wrapContentHeight()
+                                                .align(Alignment.CenterVertically),
+                                            style = typography.labelMedium
+                                        )
+                                    }
+                                }
+                                OutlinedTextField(
+                                    value = query,
+                                    textStyle = typography.bodyMedium,
+                                    onValueChange = { newValue: String -> query = newValue },
+                                    label = { Text("Message") },
+                                    enabled = !isFetchingAnswer,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp)
+                                        .onKeyEvent {
+                                            if (it.key == Key.Enter && it.type == KeyEventType.KeyUp) {
+                                                viewModel.sendMessage(query, useGPT4)
+                                                query = ""
+                                            }
+                                            true
+                                        },
+                                    singleLine = true,
+                                    keyboardOptions = KeyboardOptions(
+                                        imeAction = ImeAction.Send,
+                                    ),
+                                    keyboardActions = KeyboardActions(
+                                        onSend = {
                                             viewModel.sendMessage(query, useGPT4)
                                             query = ""
                                         }
-                                        true
-                                    },
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(
-                                    imeAction = ImeAction.Send,
-                                ),
-                                keyboardActions = KeyboardActions(
-                                    onSend = {
-                                        viewModel.sendMessage(query, useGPT4)
-                                        query = ""
+                                    ),
+                                    colors = outlinedTextFieldColors(
+                                        focusedBorderColor = gptColor,
+                                        focusedLabelColor = gptColor,
+                                        cursorColor = gptColor,
+                                        selectionColors = TextSelectionColors(gptColor, gptColor)
+                                    ),
+                                    trailingIcon = {
+                                        if (isFetchingAnswer) {
+                                            DotsLoadingIndicator(color = gptColor)
+                                        }
                                     }
-                                ),
-                                colors = outlinedTextFieldColors(
-                                    focusedBorderColor = gptColor,
-                                    focusedLabelColor = gptColor,
-                                    cursorColor = gptColor,
-                                    selectionColors = TextSelectionColors(gptColor, gptColor)
-                                ),
-                                trailingIcon = {
-                                    if (viewModel.isFetchingAnswer.collectAsStateWithLifecycle().value) {
-                                        DotsLoadingIndicator(color = gptColor)
-                                    }
-                                }
-                            )
+                                )
+                            }
                         }
                     ) { paddingValues ->
                         val chatLog = viewModel.chatLog.collectAsStateWithLifecycle()
