@@ -8,7 +8,6 @@ import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -143,7 +142,6 @@ class MainActivity : ComponentActivity() {
                                             ),
                                             animationSpec = tween(durationMillis = 200)
                                         )
-
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -155,15 +153,13 @@ class MainActivity : ComponentActivity() {
                                                 enter = slideInHorizontally(
                                                     animationSpec = tween(
                                                         durationMillis = 200,
-                                                        easing = LinearEasing
                                                     )
                                                 ) { it },
                                                 exit = slideOutHorizontally(
                                                     animationSpec = tween(
                                                         durationMillis = 200,
-                                                        easing = LinearEasing
                                                     )
-                                                ) { it }) {
+                                                ) { 0 }) {
                                                 Box(
                                                     modifier = Modifier
                                                         .fillMaxWidth(0.5f)
@@ -175,17 +171,15 @@ class MainActivity : ComponentActivity() {
                                             }
                                             AnimatedVisibility(visible = useGPT4,
                                                 enter = slideInHorizontally(
-                                                    animationSpec = tween(
+                                                    tween(
                                                         durationMillis = 200,
-                                                        easing = LinearEasing
                                                     )
-                                                ) { it },
+                                                ) { -it },
                                                 exit = slideOutHorizontally(
                                                     animationSpec = tween(
                                                         durationMillis = 200,
-                                                        easing = LinearEasing
                                                     )
-                                                ) { it }
+                                                ) { -it }
                                             ) {
                                                 Box(
                                                     modifier = Modifier
