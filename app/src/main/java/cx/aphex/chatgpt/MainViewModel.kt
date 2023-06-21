@@ -32,6 +32,10 @@ class MainViewModel(
     private val defaultDispatcher: CoroutineContext = Dispatchers.IO.limitedParallelism(1)
 ) : ViewModel() {
 
+    private val _useGPT4 = MutableStateFlow<Boolean>(false)
+    val useGPT4: StateFlow<Boolean>
+        get() = _useGPT4
+
     private val _chatLog = MutableStateFlow<List<ChatMessage>>(emptyList())
     val chatLog: StateFlow<List<ChatMessage>> = _chatLog
 
@@ -41,7 +45,11 @@ class MainViewModel(
 
     private var fetchAnswerJob: Job? = null
 
-    fun sendMessage(content: String, useGPT4: Boolean) {
+    fun setUseGPT4(useGPT4: Boolean) {
+        _useGPT4.value = useGPT4
+    }
+
+    fun sendMessage(content: String) {
         if (content.isNotBlank()) {
             // Add the user message to the chat log
             _chatLog.value = _chatLog.value + ChatMessage(
@@ -51,11 +59,11 @@ class MainViewModel(
 
             // Add a loading bot message to the chat log
             _chatLog.value = _chatLog.value + ChatMessage(ChatRole.Assistant, "\u2588")
-            generateAnswer(content, useGPT4)
+            generateAnswer(content)
         }
     }
 
-    private fun generateAnswer(content: String, useGPT4: Boolean) {
+    private fun generateAnswer(content: String) {
         Log.d("generateAnswer", "submitQuery called!!!!")
 
         viewModelScope.launch(defaultDispatcher) {
@@ -63,7 +71,7 @@ class MainViewModel(
 
             val currentAnswerChunks = mutableListOf<String>()
 
-            fetchAnswerJob = OpenAIClient.generateAnswer(content, chatLog.value, useGPT4)
+            fetchAnswerJob = OpenAIClient.generateAnswer(content, chatLog.value, useGPT4.value)
                 .onStart {
                     currentAnswerChunks.clear()
                 }
