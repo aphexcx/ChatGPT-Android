@@ -73,7 +73,7 @@ class MainViewModel(
                         "generateAnswer",
                         "got $content, currentAnswerChunks= ${currentAnswerChunks}"
                     )
-                    delay(16)
+                    delay(24)
                     currentAnswerChunks.add(content)
                     Log.d("generateAnswer", "added to currentAnswerChunks= ${currentAnswerChunks}")
                     updateLastChatMessage(currentAnswerChunks.joinToString("") + "\u2588")

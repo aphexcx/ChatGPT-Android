@@ -32,6 +32,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +41,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults.outlinedTextFieldColors
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -84,6 +86,13 @@ class MainActivity : ComponentActivity() {
             MaterialTheme(typography = appTypography) {
                 Surface(color = Color(0xFF4A148C)) { // gpt4purple
                     var useGPT4 by remember { mutableStateOf(false) }
+
+                    val gptColor by animateColorAsState(
+                        targetValue = if (useGPT4) Color(0xFF4A148C) else Color(
+                            0xFF4CAF50
+                        ),
+                        animationSpec = tween(durationMillis = 200)
+                    )
                     Scaffold(
                         bottomBar = {
                             var query by remember { mutableStateOf("") }
@@ -111,6 +120,12 @@ class MainActivity : ComponentActivity() {
                                         viewModel.sendMessage(query, useGPT4)
                                         query = ""
                                     }
+                                ),
+                                colors = outlinedTextFieldColors(
+                                    focusedBorderColor = gptColor,
+                                    focusedLabelColor = gptColor,
+                                    cursorColor = gptColor,
+                                    selectionColors = TextSelectionColors(gptColor, gptColor)
                                 )
                             )
                         }
@@ -136,12 +151,6 @@ class MainActivity : ComponentActivity() {
                                             .clip(RoundedCornerShape(6.dp))
                                             .background(Color.Gray)
                                     ) {
-                                        val boxColor by animateColorAsState(
-                                            targetValue = if (useGPT4) Color(0xFF4A148C) else Color(
-                                                0xFF4CAF50
-                                            ),
-                                            animationSpec = tween(durationMillis = 200)
-                                        )
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -166,7 +175,7 @@ class MainActivity : ComponentActivity() {
                                                         .height(64.dp)
                                                         .padding(4.dp)
                                                         .clip(RoundedCornerShape(6.dp))
-                                                        .background(boxColor)
+                                                        .background(gptColor)
                                                 )
                                             }
                                             AnimatedVisibility(visible = useGPT4,
@@ -187,7 +196,7 @@ class MainActivity : ComponentActivity() {
                                                         .height(64.dp)
                                                         .padding(4.dp)
                                                         .clip(RoundedCornerShape(6.dp))
-                                                        .background(boxColor)
+                                                        .background(gptColor)
                                                 )
                                             }
                                         }
