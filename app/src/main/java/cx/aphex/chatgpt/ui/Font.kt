@@ -27,6 +27,11 @@ val appFontFamily = FontFamily(
         style = FontStyle.Normal
     ),
     Font(
+        resId = R.font.soehne_halbfett, //600
+        weight = FontWeight.SemiBold,
+        style = FontStyle.Normal
+    )    ,
+    Font(
         resId = R.font.soehne_fett, //800
         weight = FontWeight.Bold,
         style = FontStyle.Normal
@@ -64,6 +69,12 @@ val appTypography = Typography(
         fontFamily = appFontFamily,
         fontWeight = FontWeight.W400,
         fontSize = 14.sp,
+        lineHeight = 20.sp,
+    ),
+    displayLarge = TextStyle(
+        fontFamily = appFontFamily,
+        fontWeight = FontWeight.W500,
+        fontSize = 16.sp,
         lineHeight = 20.sp,
     ),
     labelLarge = TextStyle(

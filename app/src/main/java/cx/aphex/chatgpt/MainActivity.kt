@@ -234,7 +234,7 @@ class MainActivity : ComponentActivity() {
                                                         "GPT-3.5",
                                                         textAlign = TextAlign.Start,
                                                         color = Color.White,
-                                                        style = typography.labelLarge,
+                                                        style = if (useGPT4) typography.displayLarge else typography.labelLarge,
                                                     )
                                                 }
                                             }
@@ -264,7 +264,7 @@ class MainActivity : ComponentActivity() {
                                                         "GPT-4",
                                                         textAlign = TextAlign.Start,
                                                         color = Color.White,
-                                                        style = typography.labelLarge,
+                                                        style = if (useGPT4) typography.labelLarge else typography.displayLarge,
                                                     )
                                                 }
                                             }
