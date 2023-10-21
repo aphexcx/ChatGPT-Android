@@ -12,7 +12,6 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.suspendCoroutine
 
 class TranscriptionEngine {
@@ -54,7 +53,6 @@ class TranscriptionEngine {
                 Log.d(TAG, "WaveFile: $wavePath")
                 if (File(wavePath).exists()) {
                     // Update progress to UI thread
-//                    updateListener.updateStatus(context.getString(R.string.transcribing))
                     val startTime = System.currentTimeMillis()
 
                     // Get transcription from wav file
@@ -68,17 +66,13 @@ class TranscriptionEngine {
                     Log.d(TAG, "Result len: " + result.length + ", Result: " + result)
                     it.resumeWith(Result.success(result))
                 } else {
-//                    updateListener.updateStatus(context.getString(R.string.input_file_doesn_t_exist))
                     it.resumeWith(Result.failure(FileNotFoundException(wavePath)))
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
             Log.e(TAG, "Error..", e)
-//            updateListener.updateStatus(e.message ?: "")
             it.resumeWith(Result.failure(e))
-        } finally {
-            mTranscriptionInProgress.set(false)
         }
     }
 
@@ -93,12 +87,6 @@ class TranscriptionEngine {
     }
 
     companion object {
-        private val mTranscriptionInProgress = AtomicBoolean(false)
-
-        @JvmStatic
-        val isTranscriptionInProgress: Boolean
-            get() = mTranscriptionInProgress.get()
-
         fun initializeModels(context: ComponentActivity) {
             context.lifecycleScope.launch {
                 withContext(Dispatchers.IO) {

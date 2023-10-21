@@ -49,7 +49,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -59,7 +58,9 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
@@ -98,13 +99,18 @@ class MainActivity : ComponentActivity() {
                     )
                     val isFetchingAnswer =
                         viewModel.isFetchingAnswer.collectAsStateWithLifecycle().value
+                    val textFieldController = remember { mutableStateOf(TextFieldValue()) }
                     Scaffold(
                         bottomBar = {
-                            var query by remember { mutableStateOf("") }
+//                            var query by remember { mutableStateOf("") }
                             val newRecordedText =
                                 viewModel.newRecordedText.collectAsStateWithLifecycle().value
                             LaunchedEffect(newRecordedText) {
-                                query += newRecordedText
+                                val query = textFieldController.value.text + newRecordedText
+                                // Move the cursor to the end of the text
+                                textFieldController.value = TextFieldValue(query)
+                                textFieldController.value =
+                                    textFieldController.value.copy(selection = TextRange(query.length))
                             }
                             Column {
                                 AnimatedVisibility(
@@ -140,19 +146,21 @@ class MainActivity : ComponentActivity() {
                                     val voiceInputState =
                                         viewModel.voiceInputState.collectAsStateWithLifecycle().value
                                     OutlinedTextField(
-                                        value = query,
+                                        value = textFieldController.value,
                                         textStyle = typography.bodyMedium,
-                                        onValueChange = { newValue: String -> query = newValue },
+                                        onValueChange = { newValue: TextFieldValue ->
+                                            textFieldController.value = newValue
+                                        },
                                         label = { Text("Message") },
-                                        enabled = !isFetchingAnswer && voiceInputState == VoiceInputState.IDLE,
+                                        enabled = !isFetchingAnswer,
                                         modifier = Modifier
                                             .background(if (voiceInputState == VoiceInputState.RECORDING) gptColor else Color.Transparent)
                                             .fillMaxWidth()
                                             .padding(12.dp)
                                             .onKeyEvent {
                                                 if (it.key == Key.Enter && it.type == KeyEventType.KeyUp) {
-                                                    viewModel.sendMessage(query)
-                                                    query = ""
+                                                    viewModel.sendMessage(textFieldController.value.text)
+                                                    textFieldController.value = TextFieldValue("")
                                                 }
                                                 true
                                             },
@@ -162,8 +170,8 @@ class MainActivity : ComponentActivity() {
                                         ),
                                         keyboardActions = KeyboardActions(
                                             onSend = {
-                                                viewModel.sendMessage(query)
-                                                query = ""
+                                                viewModel.sendMessage(textFieldController.value.text)
+                                                textFieldController.value = TextFieldValue("")
                                             }
                                         ),
                                         colors = outlinedTextFieldColors(
