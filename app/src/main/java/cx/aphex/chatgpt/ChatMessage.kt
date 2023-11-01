@@ -72,7 +72,7 @@ fun ChatMessage(message: ChatMessage, useGPT4: Boolean) {
                     message.getNameOrFromRole(useGPT4)?.let {
                         Text(
                             text = it,
-                            color = Color.LightGray,
+                            color = Color.Gray,
                             style = typography.labelMedium
                         )
                     }
