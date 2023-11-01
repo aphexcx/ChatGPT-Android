@@ -4,6 +4,8 @@ An Android implementation of OpenAI's official ChatGPT iOS app.
 Users can send messages and receive responses from the GPT-3.5 and GPT-4 models in a chat-like
 interface.
 
+- Now with Whisper voice support via the excellent https://github.com/nyadla-sys/whisper.tflite implementation!
+  
 <img src="https://github.com/aphexcx/ChatGPT-Android/assets/2283165/4b060510-8cd7-40c0-ac57-87507206e220" width="400"/>   
 <img src="https://github.com/aphexcx/ChatGPT-Android/assets/2283165/6c1a1f25-d9e9-4775-bb76-2026c176def1" width="400"/>
 
