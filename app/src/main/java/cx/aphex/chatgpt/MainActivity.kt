@@ -9,6 +9,9 @@ import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +41,7 @@ import androidx.compose.material3.ButtonDefaults.elevatedButtonElevation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
@@ -145,6 +149,20 @@ class MainActivity : ComponentActivity() {
                                 Row {
                                     val voiceInputState =
                                         viewModel.voiceInputState.collectAsStateWithLifecycle().value
+                                    val animatedColor by animateColorAsState(
+                                        targetValue = if (voiceInputState == VoiceInputState.RECORDING) gptColor.copy(
+                                            alpha = 0.90f
+                                        ) else gptColor.copy(
+                                            alpha = 0.33f
+                                        ),
+                                        animationSpec = infiniteRepeatable(
+                                            animation = tween(
+                                                durationMillis = 400,
+                                                easing = FastOutSlowInEasing
+                                            ),
+                                            repeatMode = RepeatMode.Reverse
+                                        )
+                                    )
                                     OutlinedTextField(
                                         value = textFieldController.value,
                                         textStyle = typography.bodyMedium,
@@ -154,7 +172,7 @@ class MainActivity : ComponentActivity() {
                                         label = { Text("Message") },
                                         enabled = !isFetchingAnswer,
                                         modifier = Modifier
-                                            .background(if (voiceInputState == VoiceInputState.RECORDING) gptColor else Color.Transparent)
+                                            .background(if (voiceInputState == VoiceInputState.RECORDING) animatedColor else Color.Transparent)
                                             .fillMaxWidth()
                                             .padding(12.dp)
                                             .onKeyEvent {
@@ -207,6 +225,7 @@ class MainActivity : ComponentActivity() {
                                                         }
                                                     }) {
                                                     Icon(
+                                                        tint = if (voiceInputState == VoiceInputState.RECORDING) Color.White else LocalContentColor.current,
                                                         imageVector = if (voiceInputState != VoiceInputState.IDLE) Icons.Filled.Stop else Icons.Filled.Mic,
                                                         contentDescription = if (voiceInputState != VoiceInputState.IDLE) "Stop Recording" else "Record Message",
                                                         modifier = Modifier
