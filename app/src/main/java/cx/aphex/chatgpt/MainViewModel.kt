@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
+import com.example.tfliteaudio.Recorder
+import com.example.tfliteaudio.TranscriptionEngine
 import cx.aphex.chatgpt.api.OpenAIClient
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -26,15 +28,33 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
+enum class VoiceInputState {
+    RECORDING,
+    TRANSCRIBING,
+    IDLE
+}
+
 @OptIn(ExperimentalCoroutinesApi::class)
 @BetaOpenAI
 class MainViewModel(
     private val defaultDispatcher: CoroutineContext = Dispatchers.IO.limitedParallelism(1)
 ) : ViewModel() {
 
-    private val _useGPT4 = MutableStateFlow<Boolean>(false)
+    private val _useGPT4 = MutableStateFlow(false)
     val useGPT4: StateFlow<Boolean>
         get() = _useGPT4
+
+    private val _useVoice = MutableStateFlow(false)
+    val useVoice: StateFlow<Boolean>
+        get() = _useVoice
+
+    private val _voiceInputState = MutableStateFlow(VoiceInputState.IDLE)
+    val voiceInputState: StateFlow<VoiceInputState>
+        get() = _voiceInputState
+
+    private val _newRecordedText = MutableStateFlow("")
+    val newRecordedText: StateFlow<String>
+        get() = _newRecordedText
 
     private val _chatLog = MutableStateFlow<List<ChatMessage>>(emptyList())
     val chatLog: StateFlow<List<ChatMessage>> = _chatLog
@@ -44,6 +64,8 @@ class MainViewModel(
         get() = _isFetchingAnswer
 
     private var fetchAnswerJob: Job? = null
+    private var recordJob: Job? = null
+    private var recorder: Recorder = Recorder()
 
     fun setUseGPT4(useGPT4: Boolean) {
         _useGPT4.value = useGPT4
@@ -71,27 +93,31 @@ class MainViewModel(
 
             val currentAnswerChunks = mutableListOf<String>()
 
-            fetchAnswerJob = OpenAIClient.generateAnswer(content, chatLog.value, useGPT4.value)
-                .onStart {
-                    currentAnswerChunks.clear()
-                }
-                .mapNotNull { chunk ->
-                    chunk.choices.firstOrNull()?.delta?.content
-                }
-                .buffer()
-                .flowOn(defaultDispatcher)
-                .onEach { content ->
-                    Log.d(
-                        "generateAnswer",
-                        "got $content, currentAnswerChunks= ${currentAnswerChunks}"
-                    )
-                    delay(24)
-                    currentAnswerChunks.add(content)
-                    Log.d("generateAnswer", "added to currentAnswerChunks= ${currentAnswerChunks}")
-                    updateLastChatMessage(currentAnswerChunks.joinToString("") + "\u2588")
-                }
-                .onCompletion { cause ->
-                    Log.e("search", "Cancelled: $cause")
+            fetchAnswerJob =
+                OpenAIClient.generateAnswer(content, chatLog.value, useGPT4.value, useVoice.value)
+                    .onStart {
+                        currentAnswerChunks.clear()
+                    }
+                    .mapNotNull { chunk ->
+                        chunk.choices.firstOrNull()?.delta?.content
+                    }
+                    .buffer()
+                    .flowOn(defaultDispatcher)
+                    .onEach { content ->
+                        Log.d(
+                            "generateAnswer",
+                            "got $content, currentAnswerChunks= ${currentAnswerChunks}"
+                        )
+                        delay(24)
+                        currentAnswerChunks.add(content)
+                        Log.d(
+                            "generateAnswer",
+                            "added to currentAnswerChunks= ${currentAnswerChunks}"
+                        )
+                        updateLastChatMessage(currentAnswerChunks.joinToString("") + "\u2588")
+                    }
+                    .onCompletion { cause ->
+                        Log.e("search", "Cancelled: $cause")
                     _isFetchingAnswer.emit(false)
                     updateLastChatMessage(currentAnswerChunks.joinToString(""))
                 }
@@ -114,5 +140,27 @@ class MainViewModel(
 
     fun cancelFetchingAnswer() {
         fetchAnswerJob?.cancel(CancellationException("Answer fetching canceled by user"))
+    }
+
+    fun recordMessage(filesDir: String) {
+        if (voiceInputState.value == VoiceInputState.IDLE) {
+            _useVoice.value = true
+            _voiceInputState.value = VoiceInputState.RECORDING
+            recordJob = viewModelScope.launch(Dispatchers.IO) {
+                recorder.record(filesDir)
+                _voiceInputState.value = VoiceInputState.TRANSCRIBING
+                val result = TranscriptionEngine().transcribeInput(filesDir)
+                _newRecordedText.value = result
+                _voiceInputState.value = VoiceInputState.IDLE
+                return@launch
+            }
+        }
+    }
+
+    fun stopRecording() {
+        if (_voiceInputState.value == VoiceInputState.RECORDING) {
+            recorder.stop()
+//            recordJob?.cancel()
+        }
     }
 }
