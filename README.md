@@ -1,41 +1,42 @@
-# ChatGPT pour Android
+# ChatGPT for Android
 
-Une implémentation Android de l'application officielle ChatGPT iOS d'OpenAI.
-Les utilisateurs peuvent envoyer des messages et recevoir des réponses des modèles GPT-3.5 et GPT-4 dans une interface de type chat.
+An Android implementation of OpenAI's official ChatGPT iOS app.
+Users can send messages and receive responses from the GPT-3.5 and GPT-4 models in a chat-like
+interface.
 
-## Caractéristiques
+## Features
 
-- Interface de type chat pour une interaction facile avec ChatGPT
-- Choisissez entre GPT-3.5 et GPT-4
-- Polices personnalisées et animations fluides pour une UX cool ;)
+- Chat-like interface for easy interaction with ChatGPT
+- Pick between GPT-3.5 and GPT-4
+- Custom fonts and smooth animations for cool UX;)
 
 ## Installation
 
-1. Clonez ce dépôt:
+1. Clone this repository:
 
 ```bash
 git clone https://github.com/aphexcx/ChatGPT-Android.git
 ```
 
-2. Ouvrez le projet dans Android Studio
-3. Construisez et exécutez l'application sur un émulateur ou un appareil physique
+2. Open the project in Android Studio
+3. Build and run the application on an emulator or a physical device
 
 ## Configuration
 
-Assurez-vous de configurer votre clé API OpenAI dans le fichier `local.properties`:
+Make sure to set up your OpenAI API key in the `local.properties` file:
 
 ```
-openai.api_key=votre_clé_api_ici
+openai.api_key=your_api_key_here
 ```
 
-Remplacez `votre_clé_api_ici` par votre véritable clé API.
+Replace `your_api_key_here` with your actual API key.
 
-## Dépendances
+## Dependencies
 
-- [SDK OpenAI](https://github.com/openai/openai)
+- [OpenAI SDK](https://github.com/openai/openai)
 - [Markwon](https://github.com/noties/Markwon)
 - [OkHttp](https://github.com/square/okhttp)
 - [Jsoup](https://github.com/jhy/jsoup)
-- [Coroutines Kotlin](https://github.com/Kotlin/kotlinx.coroutines)
-- [Composants d'architecture Android](https://developer.android.com/topic/libraries/architecture)
-- [Composants matériels pour Android](https://github.com/material-components/material-components-android)
+- [Kotlin Coroutines](https://github.com/Kotlin/kotlinx.coroutines)
+- [Android Architecture Components](https://developer.android.com/topic/libraries/architecture)
+- [Material Components for Android](https://github.com/material-components/material-components-android)
